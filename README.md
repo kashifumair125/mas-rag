@@ -1,96 +1,108 @@
 # MAS Regulatory Q&A — RAG System
 
-A production-grade Retrieval Augmented Generation (RAG) system for querying Singapore MAS (Monetary Authority of Singapore) financial regulations using natural language.
+> Ask questions about Singapore MAS financial regulations in plain English. Get grounded answers with exact source citations from official MAS documents.
 
-**Live Demo:** [Link to your HuggingFace Spaces deployment]
+![Python](https://img.shields.io/badge/Python-3.11+-blue) ![LangChain](https://img.shields.io/badge/LangChain-0.2-green) ![Streamlit](https://img.shields.io/badge/Streamlit-1.37-red) ![FAISS](https://img.shields.io/badge/FAISS-vector--store-orange)
+
+## Live Demo
+🚀 [HuggingFace Spaces — coming soon]
 
 ---
 
 ## What it does
 
-Ask questions about MAS financial regulations in plain English. The system retrieves the most relevant sections from official MAS documents and generates grounded answers with citations — no hallucination.
+Most LLMs hallucinate answers about specific regulations. This system retrieves exact chunks from official MAS PDFs before generating any answer — so every response is grounded in real documents with page citations.
 
-**Example:**
-> Q: What are the capital requirements for a Major Payment Institution?  
-> A: According to MAS Notice PSN01, a Major Payment Institution must maintain a minimum base capital of SGD 250,000... [Source: MAS_PSN01.pdf, Page 4]
+**Example question:** *"What cyber hygiene practices are mandatory for financial institutions?"*
+
+**What the system does:**
+1. Converts your question into an embedding vector (semantic search)
+2. Retrieves the top-3 most relevant chunks from the FAISS vector database
+3. Sends those chunks + your question to the LLM
+4. Returns a structured answer with exact source document and page number
+
+---
+
+## Tech Stack
+
+| Component | Technology | Why |
+|-----------|-----------|-----|
+| Orchestration | LangChain 0.2 (LCEL) | Industry standard for RAG pipelines |
+| Vector store | FAISS | Fast similarity search, runs locally |
+| Embeddings | Sentence Transformers (all-MiniLM-L6-v2) | Free, no API cost, 384 dimensions |
+| LLM | OpenRouter (Llama 3 / auto-routing) | Free tier, OpenAI-compatible API |
+| UI | Streamlit | Rapid deployment, clean interface |
+| PDF loading | PyPDF | Extract text from MAS circulars |
+
+---
+
+## Documents Indexed
+
+| Document | Coverage |
+|----------|----------|
+| MAS Notice 626 (2024) | AML/CFT requirements for banks — customer due diligence, wire transfers, suspicious transaction reporting |
+| MAS Notice FSM-N14 (2024) | Cyber hygiene — administrative accounts, security patches, MFA requirements |
+| MAS Notice 302 (2024) | Insurance product development and pricing requirements |
+| PSN09 (2026) | Payment services — specified matters and forms |
 
 ---
 
 ## Architecture
 
 ```
-User Question
-      │
-      ▼
- Embedding Model          ← all-MiniLM-L6-v2 (local, free)
- (query → vector)
-      │
-      ▼
-  ChromaDB                ← similarity search, top-k chunks
- (vector store)
-      │
-      ▼
- Retrieved Chunks
- + Original Question
-      │
-      ▼
-  Gemini 1.5 Flash        ← grounded answer generation
-      │
-      ▼
- Answer + Source Citations
+User question
+     │
+     ▼
+Sentence Transformer (embed question)
+     │
+     ▼
+FAISS similarity search → top-k chunks
+     │
+     ▼
+RAG prompt (chunks + question)
+     │
+     ▼
+OpenRouter LLM → answer with citations
+     │
+     ▼
+Streamlit UI (answer + source expanders)
 ```
 
 ---
 
-## Tech Stack
+## Run Locally
 
-| Component | Technology |
-|---|---|
-| Orchestration | LangChain |
-| Embeddings | sentence-transformers/all-MiniLM-L6-v2 |
-| Vector Store | ChromaDB |
-| LLM | Google Gemini 1.5 Flash |
-| Evaluation | RAGAs |
-| UI | Streamlit |
-
----
-
-## Evaluation Results (RAGAs)
-
-| Metric | Score | Meaning |
-|---|---|---|
-| Faithfulness | 0.89 | Answers are grounded in retrieved docs (low hallucination) |
-| Answer Relevancy | 0.84 | Answers address the actual question |
-| Context Recall | 0.78 | Retrieval finds the right chunks |
-| Context Precision | 0.81 | Retrieved chunks are relevant (low noise) |
-
-*Evaluated on 10 manually curated test questions with ground truth answers.*
-
----
-
-## Setup
+**Prerequisites:** Python 3.11+, Git
 
 ```bash
-git clone https://github.com/kashifumair125/mas-rag
+# 1. Clone
+git clone https://github.com/kashifumair125/mas-rag.git
 cd mas-rag
 
+# 2. Virtual environment
+python -m venv venv
+venv\Scripts\activate       # Windows
+# source venv/bin/activate  # Mac/Linux
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# Add your Gemini API key (free at aistudio.google.com)
-echo "GOOGLE_API_KEY=your_key_here" > .env
+# 4. API key
+# Get free key from openrouter.ai
+echo "OPENROUTER_API_KEY=your_key_here" > .env
 
-# Add MAS PDF documents to data/pdfs/
-# Download from: https://www.mas.gov.sg/regulation/notices
+# 5. Add your PDFs
+# Put MAS PDF documents in data/pdfs/
+# Download from mas.gov.sg/regulation/notices
 
-# Build the vector store (run once)
+# 6. Build vector database (run once)
 python src/ingest.py
 
-# Start the app
+# 7. Launch
 streamlit run src/app.py
-
-# Run evaluation
-python evaluate.py
 ```
+
+App opens at **http://localhost:8501**
 
 ---
 
@@ -98,15 +110,19 @@ python evaluate.py
 
 ```
 mas-rag/
-├── data/
-│   └── pdfs/              # MAS regulatory PDFs
 ├── src/
-│   ├── ingest.py          # PDF loading, chunking, embedding, ChromaDB storage
-│   ├── retriever.py       # RAG chain: retrieval + generation
-│   └── app.py             # Streamlit web UI
-├── chroma_db/             # Persisted vector store (gitignored)
-├── evaluate.py            # RAGAs evaluation pipeline
-├── evaluation_results.json
+│   ├── app.py              # Streamlit UI
+│   ├── ingest.py           # PDF loading, chunking, FAISS indexing
+│   └── retriever.py        # RAG chain (LCEL pipeline)
+├── data/
+│   └── pdfs/               # MAS regulatory documents
+├── faiss_db/               # Vector store (auto-generated, gitignored)
+├── tests/
+│   └── test_retriever.py   # Unit tests
+├── .github/
+│   └── workflows/
+│       └── ci.yml          # GitHub Actions CI pipeline
+├── Dockerfile              # Container definition
 ├── requirements.txt
 └── README.md
 ```
@@ -115,19 +131,49 @@ mas-rag/
 
 ## Key Design Decisions
 
-**Chunk size = 500, overlap = 50:** Tested chunk sizes from 200–1000. 500 chars with 50-char overlap gave the best balance of context preservation and retrieval precision on regulatory documents.
+**Chunk size: 500 chars with 50 overlap** — prevents information loss at boundaries while keeping chunks focused enough for precise retrieval.
 
-**Local embeddings over OpenAI:** `all-MiniLM-L6-v2` runs locally (no API cost), produces 384-dim vectors, and achieves comparable retrieval quality to `text-embedding-ada-002` on this domain.
+**FAISS over ChromaDB** — zero C++ dependency issues on Windows/Python 3.13, faster indexing for small-medium corpora.
 
-**RAGAs evaluation:** Most RAG demos skip evaluation entirely. RAGAs provides automated metrics (faithfulness, relevancy, recall, precision) that quantify system quality without manual review.
+**LCEL pipeline over RetrievalQA** — uses modern LangChain Expression Language, avoids deprecated chains, better composability.
 
----
-
-## Hackathon Version — OpenMetadata
-
-This same RAG architecture was adapted for the WeMakeDevs × OpenMetadata hackathon (Apr 2026), where it serves as a natural language interface over data catalog metadata instead of PDF documents.
+**all-MiniLM-L6-v2 embeddings** — 80MB model, runs on CPU, 384 dimensions. Sufficient quality for regulatory document retrieval without API cost.
 
 ---
 
-*Built by Umair Kashif — MCA, Manipal Institute of Technology*  
-*Contact: kashifumair125@gmail.com | [LinkedIn](https://linkedin.com/in/umair-kashif)*
+## What I Learned Building This
+
+- RAG architecture: chunking strategy, embedding model selection, similarity search tuning
+- LangChain LCEL pipelines vs legacy chains
+- FAISS vector indexing and persistence
+- Dependency management with Python 3.13 compatibility issues
+- Streamlit caching with `@st.cache_resource` for LLM chains
+
+---
+
+## Roadmap
+
+- [ ] Deploy to HuggingFace Spaces
+- [ ] Docker containerization
+- [ ] GitHub Actions CI/CD
+- [ ] GCP Cloud Run deployment
+- [ ] RAGAs evaluation metrics
+- [ ] Add more MAS documents (target: 20+ circulars)
+- [ ] MLflow experiment tracking for chunk size experiments
+
+---
+
+## Author
+
+**Umair Kashif** — MCA, Manipal University  
+Published BERT/DistilBERT paper at international conference 2025  
+Targeting ML/NLP engineering roles in Singapore
+
+[GitHub](https://github.com/kashifumair125) | [LinkedIn](https://linkedin.com/in/kashifumair125)
+
+---
+
+## Related Projects
+
+- [Drug Review Sentiment API](#) — BERT fine-tuning deployed on HuggingFace Hub
+- [Stock Prediction MLOps](#) — MLflow + DVC + Evidently AI pipeline
