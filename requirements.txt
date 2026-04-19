@@ -1,0 +1,23 @@
+# Core RAG stack
+langchain==0.2.16
+langchain-community==0.2.16
+langchain-google-genai==1.0.10
+
+# Embeddings (free, local)
+sentence-transformers==3.0.1
+
+# Vector store
+chromadb==0.5.3
+
+# PDF loading
+pypdf==4.3.1
+
+# UI
+streamlit==1.37.1
+
+# Evaluation
+ragas==0.1.14
+datasets==2.20.0
+
+# Utilities
+python-dotenv==1.0.1
