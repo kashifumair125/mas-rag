@@ -1,0 +1,2 @@
+faiss_db/index.faiss filter=lfs diff=lfs merge=lfs -text
+faiss_db/index.pkl filter=lfs diff=lfs merge=lfs -text
