@@ -17,7 +17,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project files
 COPY src/ ./src/
-COPY data/ ./data/
 COPY faiss_db/ ./faiss_db/
 
 # Streamlit config
