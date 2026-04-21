@@ -16,7 +16,8 @@ pinned: false
 ![Python](https://img.shields.io/badge/Python-3.11+-blue) ![LangChain](https://img.shields.io/badge/LangChain-0.2-green) ![Streamlit](https://img.shields.io/badge/Streamlit-1.37-red) ![FAISS](https://img.shields.io/badge/FAISS-vector--store-orange)
 
 ## Live Demo
-🚀 [HuggingFace Spaces — coming soon]
+- 🚀 HuggingFace Spaces: https://huggingface.co/spaces/kashii1/mas-rag
+- ☁️ GCP Cloud Run: https://mas-rag-26912506161.asia-southeast1.run.app
 
 ---
 
@@ -177,8 +178,6 @@ mas-rag/
 ## Author
 
 **Umair Kashif** — MCA, Manipal University  
-Published BERT/DistilBERT paper at international conference 2025  
-Targeting ML/NLP engineering roles in Singapore
 
 [GitHub](https://github.com/kashifumair125) | [LinkedIn](https://linkedin.com/in/kashifumair125)
 
