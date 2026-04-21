@@ -56,3 +56,4 @@ mlflow.db
 # Logs
 *.log
 logs/
+faiss_db/
