@@ -1,3 +1,14 @@
+---
+title: MAS RAG
+emoji: 🏦
+colorFrom: blue
+colorTo: green
+sdk: streamlit
+sdk_version: "1.37.1"
+app_file: src/app.py
+pinned: false
+---
+
 # MAS Regulatory Q&A — RAG System
 
 > Ask questions about Singapore MAS financial regulations in plain English. Get grounded answers with exact source citations from official MAS documents.

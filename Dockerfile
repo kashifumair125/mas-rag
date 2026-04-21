@@ -1,33 +1,36 @@
-# Multi-stage build — smaller final image
-FROM python:3.11-slim AS base
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# System dependencies for FAISS and sentence-transformers
 RUN apt-get update && apt-get install -y \
-    build-essential \
+    libgomp1 \
+    gcc \
+    g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Copy requirements first for Docker layer caching
 COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
+# Copy project files
 COPY src/ ./src/
-COPY evaluate.py .
-COPY README.md .
+COPY data/ ./data/
+COPY faiss_db/ ./faiss_db/
 
-# Create data directory
-RUN mkdir -p data/pdfs
+# Streamlit config
+ENV STREAMLIT_SERVER_PORT=8501
+ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
+ENV STREAMLIT_SERVER_HEADLESS=true
 
-# Expose Streamlit port
+# Expose port
 EXPOSE 8501
 
 # Health check
-HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
 
 # Run the app
-CMD ["streamlit", "run", "src/app.py", \
-     "--server.port=8501", \
-     "--server.address=0.0.0.0", \
-     "--server.headless=true"]
+CMD ["streamlit", "run", "src/app.py", "--server.port=8501", "--server.address=0.0.0.0"]

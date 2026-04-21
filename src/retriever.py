@@ -54,7 +54,7 @@ def build_qa_chain(k: int = 3):
     llm = ChatOpenAI(
     model="openrouter/auto",
     base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
+    openai_api_key=os.environ.get("OPENROUTER_API_KEY", os.getenv("OPENROUTER_API_KEY")),
     temperature=0.1,
     max_tokens=1024
 )
