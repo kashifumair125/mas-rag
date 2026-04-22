@@ -50,10 +50,10 @@ def get_chain(k):
 # ── Example questions ─────────────────────────────────────────────────────────
 st.subheader("Try these questions")
 example_questions = [
-    "What are the requirements for crypto asset service providers?",
-    "What capital requirements apply to payment service licensees?",
-    "How does MAS define a significant financial institution?",
-    "What are the AML/CFT obligations for financial institutions?",
+    "What are the responsibilities of insurers in product development and pricing?",
+    "What payout features are prohibited under MAS Notice 302?",
+    "What disclosures must be made for settlement options?",
+    "When must insurers obtain MAS approval before launching a product?",
 ]
 
 cols = st.columns(2)
