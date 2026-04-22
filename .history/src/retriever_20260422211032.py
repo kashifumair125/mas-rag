@@ -61,11 +61,10 @@ def build_qa_chain(k: int = 3):
     vectorstore = load_vectorstore()
 
     # ✅ FIX 1: Increase k to retrieve more chunks for better coverage
-    # Change this back
     retriever = vectorstore.as_retriever(
-    search_type="similarity",
-    search_kwargs={"k": k}
-)
+        search_type="mmr",  # MMR reduces redundant chunks
+        search_kwargs={"k": k, "fetch_k": k * 3}
+    )
 
     def format_docs(docs):
         formatted = []

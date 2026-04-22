@@ -56,20 +56,19 @@ example_questions = [
     "When must insurers obtain MAS approval before launching a product?",
 ]
 
-if "selected_question" not in st.session_state:
-    st.session_state.selected_question = ""
-
 cols = st.columns(2)
+clicked_question = None
 for i, q in enumerate(example_questions):
     with cols[i % 2]:
         if st.button(q, use_container_width=True):
-            st.session_state.selected_question = q
+            clicked_question = q
 
+# ── Main Q&A interface ────────────────────────────────────────────────────────
 st.divider()
 
 user_question = st.text_input(
     "Ask a question about MAS regulations:",
-    value=st.session_state.selected_question,
+    value=clicked_question or "",
     placeholder="e.g. What are the requirements for digital payment token services?"
 )
 

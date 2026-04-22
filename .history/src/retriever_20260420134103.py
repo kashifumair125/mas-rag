@@ -1,5 +1,6 @@
 """
 retriever.py — RAG chain using FAISS + OpenRouter via LCEL pipeline
+No deprecated RetrievalQA — uses modern LangChain Expression Language
 """
 
 import warnings
@@ -51,30 +52,21 @@ def load_vectorstore():
 
 def build_qa_chain(k: int = 3):
     llm = ChatOpenAI(
-        model="openrouter/auto",
-        base_url="https://openrouter.ai/api/v1",
-        openai_api_key=os.environ.get("OPENROUTER_API_KEY"),
-        temperature=0.1,
-        max_tokens=1024
-    )
-
-    vectorstore = load_vectorstore()
-
-    # ✅ FIX 1: Increase k to retrieve more chunks for better coverage
-    # Change this back
-    retriever = vectorstore.as_retriever(
-    search_type="similarity",
-    search_kwargs={"k": k}
+    model="openrouter/auto",
+    base_url="https://openrouter.ai/api/v1",
+    openai_api_key=os.environ.get("OPENROUTER_API_KEY", os.getenv("OPENROUTER_API_KEY")),
+    temperature=0.1,
+    max_tokens=1024
 )
 
+    vectorstore = load_vectorstore()
+    retriever = vectorstore.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": k}
+    )
+
     def format_docs(docs):
-        formatted = []
-        for doc in docs:
-            # ✅ FIX 2: Include source info inside the context so LLM can cite it
-            source = doc.metadata.get("source", "unknown")
-            page = doc.metadata.get("page", "?")
-            formatted.append(f"[Source: {source}, Page {page}]\n{doc.page_content}")
-        return "\n\n".join(formatted)
+        return "\n\n".join(doc.page_content for doc in docs)
 
     chain = (
         {"context": retriever | format_docs, "question": RunnablePassthrough()}
@@ -98,13 +90,9 @@ def query(question: str, qa_chain=None) -> dict:
 
     sources = []
     for doc in source_docs:
-        # ✅ FIX 3: Correct metadata key is "source" not "source_file"
-        raw_source = doc.metadata.get("source", "unknown")
-        # Clean up path to just show filename
-        file_name = raw_source.replace("\\", "/").split("/")[-1]
         sources.append({
-            "content": doc.page_content[:500],  # Show more content
-            "file": file_name,
+            "content": doc.page_content[:300],
+            "file": doc.metadata.get("source_file", "unknown"),
             "page": doc.metadata.get("page", "?")
         })
 
@@ -115,7 +103,7 @@ def query(question: str, qa_chain=None) -> dict:
 
 
 if __name__ == "__main__":
-    result = query("What payout features are prohibited under MAS Notice 302?")
+    result = query("What are the AML/CFT requirements for banks?")
     print("Answer:", result["answer"])
     print("\nSources:")
     for s in result["sources"]:

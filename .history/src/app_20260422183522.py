@@ -26,15 +26,15 @@ with st.sidebar:
     st.markdown("""
     **How it works:**
     1. Your question is converted to an embedding vector
-    2. Top-3 most relevant document chunks are retrieved from FAISS
-    3. Those chunks + your question are sent to OpenRouter
+    2. Top-3 most relevant document chunks are retrieved from ChromaDB
+    3. Those chunks + your question are sent to Gemini
     4. Answer is generated citing the actual source documents
     
     **Tech stack:**
     - LangChain (orchestration)
     - Sentence Transformers (embeddings)  
-    - FAISS (vector store)
-    - OpenRouter (LLM, free tier)
+    - ChromaDB (vector store)
+    - Gemini 1.5 Flash (LLM, free tier)
     - Streamlit (UI)
     """)
     
@@ -43,7 +43,7 @@ with st.sidebar:
 
 # ── Load QA chain (cached so it doesn't reload on every interaction) ─────────
 @st.cache_resource
-def get_chain(k, version="v2"):  # bump version to force reload
+def get_chain(k):
     with st.spinner("Loading RAG chain..."):
         return build_qa_chain(k=k)
 
@@ -56,20 +56,19 @@ example_questions = [
     "When must insurers obtain MAS approval before launching a product?",
 ]
 
-if "selected_question" not in st.session_state:
-    st.session_state.selected_question = ""
-
 cols = st.columns(2)
+clicked_question = None
 for i, q in enumerate(example_questions):
     with cols[i % 2]:
         if st.button(q, use_container_width=True):
-            st.session_state.selected_question = q
+            clicked_question = q
 
+# ── Main Q&A interface ────────────────────────────────────────────────────────
 st.divider()
 
 user_question = st.text_input(
     "Ask a question about MAS regulations:",
-    value=st.session_state.selected_question,
+    value=clicked_question or "",
     placeholder="e.g. What are the requirements for digital payment token services?"
 )
 

@@ -31,8 +31,8 @@ ENV/
 *.ipynb
 
 # Data — PDFs can be large, don't commit raw data
-data/pdfs/
-*.pdf
+# data/pdfs/
+# *.pdf
 
 # OS
 .DS_Store
