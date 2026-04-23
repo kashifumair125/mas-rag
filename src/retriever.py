@@ -13,7 +13,7 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-
+from langchain_openai import ChatOpenAI
 load_dotenv()
 
 FAISS_DIR   = "./faiss_db"
@@ -51,9 +51,9 @@ def load_vectorstore():
 
 def build_qa_chain(k: int = 3):
     llm = ChatOpenAI(
-        model="openrouter/auto",
-        base_url="https://openrouter.ai/api/v1",
-        openai_api_key=os.environ.get("OPENROUTER_API_KEY"),
+        model="llama-3.1-8b-instant",
+        base_url="https://api.groq.com/openai/v1",
+        api_key=os.getenv("GROQ_API_KEY"),
         temperature=0.1,
         max_tokens=1024
     )
