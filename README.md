@@ -174,6 +174,10 @@ mas-rag/
 - [ ] MLflow experiment tracking for chunk size experiments
 
 ---
+<img width="1900" height="877" alt="image" src="https://github.com/user-attachments/assets/d6458f18-a0af-4826-870e-ae9d765816b3" />
+<img width="1918" height="868" alt="image" src="https://github.com/user-attachments/assets/8306fe01-d8a1-40e4-a9cf-0e6fafcc3067" />
+
+---
 
 ## Author
 
